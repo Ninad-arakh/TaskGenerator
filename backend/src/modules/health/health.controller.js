@@ -1,14 +1,20 @@
 import mongoose from "mongoose";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GEMINI_API_KEY } from "../../config/env.js";
+import { GoogleGenAI } from "@google/genai";
+import { ENV } from "../../config/env.js";
 
 export const getHealth = async (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1;
 
   let llmStatus = true;
+
   try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    await genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const ai = new GoogleGenAI({ apiKey: ENV.GEMINI_API_KEY });
+
+    await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: "ping",
+    });
+
   } catch {
     llmStatus = false;
   }
@@ -17,5 +23,13 @@ export const getHealth = async (req, res) => {
     backend: true,
     database: dbStatus,
     llm: llmStatus,
+  });
+};
+
+export const healthCheck = (req, res) => {
+  res.json({
+    status: "OK",
+    uptime: process.uptime(),
+    timestamp: Date.now(),
   });
 };

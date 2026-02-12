@@ -1,8 +1,7 @@
-export function safeJsonParse(text) {
-  const cleaned = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-
-  return JSON.parse(cleaned);
-}
+export const safeJSONParse = (str) => {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+};

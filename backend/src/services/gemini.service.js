@@ -1,10 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
-import { GEMINI_API_KEY } from "../config/env.js";
-import { safeJsonParse } from "../utils/jsonParser.js";
+import { ENV } from "../config/env.js";
+import { safeJSONParse } from "../utils/jsonParser.js";
 import { withRetry } from "../utils/retry.js";
 
 const ai = new GoogleGenAI({
-  apiKey: GEMINI_API_KEY,
+  apiKey: ENV.GEMINI_API_KEY,
 });
 
 const model = "gemini-2.5-flash";
@@ -65,7 +65,9 @@ ${brokenText}
     },
   });
 
-  return safeJsonParse(repairResponse.text);
+  
+
+  return safeJSONParse(repairResponse.text);
 }
 
 export async function generateSpec(input) {
@@ -81,9 +83,31 @@ export async function generateSpec(input) {
     });
 
     try {
-      return safeJsonParse(response.text);
+      return safeJSONParse(response.text);
     } catch {
       return await attemptJsonRepair(response.text);
     }
   }, 2);
 }
+
+/* 
+
+import axios from "axios";
+import { ENV } from "../config/env.js";
+import { retry } from "../utils/retry.js";
+
+export const generateFromGemini = async (prompt) => {
+  return retry(async () => {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${ENV.GEMINI_API_KEY}`,
+      {
+        contents: [{ parts: [{ text: prompt }] }],
+      }
+    );
+
+    return response.data.candidates[0].content.parts[0].text;
+  }, 2);
+};
+
+
+*/

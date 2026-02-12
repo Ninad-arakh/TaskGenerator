@@ -27,3 +27,14 @@ export function buildMarkdown(spec) {
 
   return md;
 }
+
+
+/* 
+
+export const buildMarkdown = (content) => {
+  return `# Generated Specification\n\n${content}`;
+};
+
+
+
+*/
