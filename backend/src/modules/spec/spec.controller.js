@@ -1,6 +1,7 @@
 import Spec from "./spec.model.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import { generateSpec } from "../../services/gemini.service.js";
+import { randomUUID } from "crypto";
 
 export const createSpec = asyncHandler(async (req, res) => {
   const { goal, users, constraints, templateType } = req.body;
@@ -10,6 +11,14 @@ export const createSpec = asyncHandler(async (req, res) => {
     users,
     constraints,
     templateType,
+  });
+
+  output.epics?.forEach((epic) => {
+    epic.userStories?.forEach((story) => {
+      story.tasks?.forEach((task) => {
+        task.id = randomUUID();
+      });
+    });
   });
 
   const spec = await Spec.create({
@@ -52,13 +61,26 @@ export const editTask = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Spec not found" });
   }
 
-  const task = spec.output.tasks.find((t) => t.id === taskId);
-  if (!task) {
+  let taskFound = null;
+
+  for (const epic of spec.output.epics || []) {
+    for (const story of epic.userStories || []) {
+      const task = story.tasks?.find((t) => String(t.id) === String(taskId));
+
+      if (task) {
+        Object.assign(task, updates);
+        taskFound = task;
+        break;
+      }
+    }
+    if (taskFound) break;
+  }
+
+  if (!taskFound) {
     return res.status(404).json({ message: "Task not found" });
   }
 
-  Object.assign(task, updates);
-
+  spec.markModified("output"); // 👈 FORCE mongoose to detect change
   await spec.save();
 
   res.json({ success: true, data: spec });
@@ -67,25 +89,31 @@ export const editTask = asyncHandler(async (req, res) => {
 // 🔁 Reorder Tasks
 export const reorderTasks = asyncHandler(async (req, res) => {
   const { specId } = req.params;
-  const { orderedTaskIds } = req.body;
-  // ["task-3", "task-1", "task-2"]
+  const { epicIndex, storyIndex, orderedTaskIds } = req.body;
+
+  console.log(`
+    specId : ${specId}
+    epicIndex : ${epicIndex}
+    storyIndex : ${storyIndex}
+    orderedTaskIds : ${orderedTaskIds}
+      `);
 
   const spec = await Spec.findById(specId);
   if (!spec) {
     return res.status(404).json({ message: "Spec not found" });
   }
 
-  const reordered = orderedTaskIds
-    .map((id, index) => {
-      const task = spec.output.tasks.find((t) => t.id === id);
-      if (task) {
-        task.order = index + 1;
-      }
-      return task;
-    })
+  const story = spec.output?.epics?.[epicIndex]?.userStories?.[storyIndex];
+
+  if (!story || !Array.isArray(story.tasks)) {
+    return res.status(400).json({ message: "Invalid story path" });
+  }
+
+  const reorderedTasks = orderedTaskIds
+    .map((id) => story.tasks.find((t) => String(t.id) === String(id)))
     .filter(Boolean);
 
-  spec.output.tasks = reordered;
+  story.tasks = reorderedTasks;
 
   await spec.save();
 
@@ -95,22 +123,23 @@ export const reorderTasks = asyncHandler(async (req, res) => {
 // 📦 Group Tasks
 export const groupTasks = asyncHandler(async (req, res) => {
   const { specId } = req.params;
-  const { groups } = req.body;
-  /*
-    groups: [
-      { groupName: "Planning", taskIds: ["task-1", "task-2"] },
-      { groupName: "Development", taskIds: ["task-3"] }
-    ]
-  */
+  const { epicIndex, storyIndex, groups } = req.body;
 
   const spec = await Spec.findById(specId);
   if (!spec) {
     return res.status(404).json({ message: "Spec not found" });
   }
 
+  const story = spec.output?.epics?.[epicIndex]?.userStories?.[storyIndex];
+
+  if (!story || !Array.isArray(story.tasks)) {
+    return res.status(400).json({ message: "Invalid story path" });
+  }
+
   groups.forEach((group) => {
     group.taskIds.forEach((taskId) => {
-      const task = spec.output.tasks.find((t) => t.id === taskId);
+      const task = story.tasks.find((t) => String(t.id) === String(taskId));
+
       if (task) {
         task.group = group.groupName;
       }

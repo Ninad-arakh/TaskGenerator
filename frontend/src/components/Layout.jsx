@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
 
 export default function Layout({ children }) {
   const [open, setOpen] = useState(false);
@@ -7,6 +8,10 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen">
+      <>
+        <Toaster richColors position="top-right" />
+        {/* rest of UI */}
+      </>
       <header className="border-b border-gray-400/20 md:shadow-md bg-linear-to-br from-[#e2eafd] to-[#faf7fe]">
         <div className="mx-auto md:mx-8 px-4 py-4 flex justify-between items-center">
           {/* Logo */}

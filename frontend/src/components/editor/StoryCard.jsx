@@ -21,6 +21,7 @@ export default function StoryCard({
   storyIndex,
   deleteTask,
   reorderTasks,
+  editTask,
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -28,12 +29,17 @@ export default function StoryCard({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = parseInt(active.id.split("-")[2]);
-    const newIndex = parseInt(over.id.split("-")[2]);
+    const oldIndex = validTasks.findIndex((t) => t.id === active.id);
+    const newIndex = validTasks.findIndex((t) => t.id === over.id);
 
-    const newTasks = arrayMove(story.tasks, oldIndex, newIndex);
+    const newTasks = arrayMove(validTasks, oldIndex, newIndex);
+
     reorderTasks(epicIndex, storyIndex, newTasks);
   }
+
+  const validTasks = Array.isArray(story?.tasks)
+    ? story.tasks.filter((task) => task && task.id)
+    : [];
 
   return (
     <div className="bg-gradient-to-br from-white to-slate-50 border rounded-2xl p-6 space-y-5">
@@ -51,18 +57,18 @@ export default function StoryCard({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={story.tasks.map((_, i) => `${epicIndex}-${storyIndex}-${i}`)}
+          items={validTasks.map((task) => task.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-4">
-            {story.tasks.map((task, taskIndex) => (
+            {validTasks.map((task) => (
               <TaskItem
-                key={taskIndex}
-                id={`${epicIndex}-${storyIndex}-${taskIndex}`}
+                key={task.id}
+                id={task.id}
                 task={task}
-                onDelete={() => deleteTask(epicIndex, storyIndex, taskIndex)}
+                onDelete={() => deleteTask(epicIndex, storyIndex, task.id)}
                 onEdit={(updates) =>
-                  editTask(epicIndex, storyIndex, taskIndex, updates)
+                  editTask(epicIndex, storyIndex, task.id, updates)
                 }
               />
             ))}

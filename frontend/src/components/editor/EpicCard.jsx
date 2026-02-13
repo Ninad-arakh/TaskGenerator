@@ -5,6 +5,7 @@ export default function EpicCard({
   epicIndex,
   deleteTask,
   reorderTasks,
+  editTask
 }) {
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-8 shadow-lg space-y-8 transition hover:shadow-2xl">
@@ -29,6 +30,7 @@ export default function EpicCard({
           storyIndex={storyIndex}
           deleteTask={deleteTask}
           reorderTasks={reorderTasks}
+          editTask={editTask}
         />
       ))}
     </div>

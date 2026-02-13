@@ -12,6 +12,5 @@ export async function getHistory() {
 
 export async function getHealth() {
   const res = await api.get("/api/health");
-  console.log("health : " , res)
   return res.data;
 }
