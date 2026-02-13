@@ -93,7 +93,7 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      <main className=" mx-auto px-4 py-8">{children}</main>
+      <main className=" mx-auto ">{children}</main>
     </div>
   );
 }
