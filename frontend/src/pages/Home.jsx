@@ -4,7 +4,11 @@ import { generateSpec } from "../api/specService";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorAlert from "../components/ErrorAlert";
 import aiRoboImg from "/ai_robo.png";
-import { IconBoltFilled, IconPuzzleFilled, IconSquareCheckFilled } from "@tabler/icons-react";
+import {
+  IconBoltFilled,
+  IconPuzzleFilled,
+  IconSquareCheckFilled,
+} from "@tabler/icons-react";
 
 // Modular Feature Card Component
 function FeatureCard({ icon, title, desc }) {
@@ -25,7 +29,11 @@ function HeroSection() {
     <div className="relative w-full flex flex-col gap-4 md:gap-6 justify-center h-auto md:h-[35vh] text-center md:text-left px-4 md:px-28 py-12 md:py-16">
       {/* Decorative Robo */}
       <div className="absolute -z-10 w-[35vw] md:w-[25vw] right-0 top-5 md:top-10 hidden md:block">
-        <img src={aiRoboImg} alt="robo" className="absolute w-full animate-float" />
+        <img
+          src={aiRoboImg}
+          alt="robo"
+          className="absolute w-full animate-float"
+        />
         <div className="absolute top-5 w-full h-[30vh] rounded-full bg-linear-to-r from-[#ada9eb]/60 to-[#fcd1f9]/40 shadow-2xl -z-20" />
       </div>
 
@@ -37,13 +45,16 @@ function HeroSection() {
         in Seconds
       </h2>
       <p className="text-gray-700 md:text-lg max-w-xl mx-auto md:mx-0">
-        Generate tailored AI tasks for any purpose with ease. Perfect for Work, Study, or Creative projects.
+        Generate tailored AI tasks for any purpose with ease. Perfect for Work,
+        Study, or Creative projects.
       </p>
       <div className="flex flex-col md:flex-row justify-center md:justify-start items-center gap-4 mt-4">
         <button className="bg-linear-to-b from-[#4979e7] to-[#2c53ca] px-8 py-3 rounded-full text-white font-semibold shadow-lg transform transition-transform hover:scale-105 hover:shadow-2xl active:scale-95 duration-300">
           Generate Task
         </button>
-        <p className="italic text-gray-600 text-sm md:text-base">No sign-up required</p>
+        <p className="italic text-gray-600 text-sm md:text-base">
+          No sign-up required
+        </p>
       </div>
     </div>
   );
@@ -52,9 +63,21 @@ function HeroSection() {
 // Features Section Component
 function FeaturesSection() {
   const features = [
-    { icon: <IconBoltFilled className="text-yellow-400" />, title: "Quick & Easy", desc: "Generate tasks instantly with a simple prompt." },
-    { icon: <IconSquareCheckFilled className="text-blue-400" />, title: "Tailored Results", desc: "Get tasks customized to your specific needs." },
-    { icon: <IconPuzzleFilled className="text-green-700" />, title: "Versatile Uses", desc: "Ideal for Work, Study, Creative projects, and more." },
+    {
+      icon: <IconBoltFilled className="text-yellow-400" />,
+      title: "Quick & Easy",
+      desc: "Generate tasks instantly with a simple prompt.",
+    },
+    {
+      icon: <IconSquareCheckFilled className="text-blue-400" />,
+      title: "Tailored Results",
+      desc: "Get tasks customized to your specific needs.",
+    },
+    {
+      icon: <IconPuzzleFilled className="text-green-700" />,
+      title: "Versatile Uses",
+      desc: "Ideal for Work, Study, Creative projects, and more.",
+    },
   ];
 
   return (
@@ -83,7 +106,9 @@ function FormSection({ form, handleChange, handleSubmit, loading, error }) {
 
       {fields.map((field, idx) => (
         <div key={idx}>
-          <label className="block mb-2 font-medium text-gray-700">{field.label}</label>
+          <label className="block mb-2 font-medium text-gray-700">
+            {field.label}
+          </label>
           <textarea
             name={field.name}
             rows={field.rows}
@@ -124,7 +149,9 @@ function FormSection({ form, handleChange, handleSubmit, loading, error }) {
 function Divider({ text }) {
   return (
     <div className="mt-12 flex flex-col items-center w-full relative">
-      <h3 className="text-3xl font-semibold text-[#475569] bg-[#eef2fe] px-2">{text}</h3>
+      <h3 className="text-3xl font-semibold text-[#475569] bg-[#eef2fe] px-2">
+        {text}
+      </h3>
       <div className="w-full h-1 bg-linear-to-r from-transparent via-gray-400/40 to-transparent absolute top-5 -z-10" />
     </div>
   );
@@ -141,7 +168,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -155,7 +183,27 @@ export default function Home() {
       const data = await generateSpec(form);
       navigate("/editor", { state: data });
     } catch (err) {
-      setError(err.message);
+      let message = "LLM Quota exceeded. Please try again after 24 hours.";
+
+      // If using axios
+      const backendMessage = err.response?.data?.message;
+
+      if (backendMessage) {
+        try {
+          const parsed = JSON.parse(backendMessage);
+
+          if (parsed?.error?.code === 429) {
+            message = "Quota exceeded. Please wait before trying again.";
+          } else {
+            message = parsed?.error?.message || message;
+          }
+        } catch {
+          // If it's not JSON, just use it directly
+          message = backendMessage;
+        }
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }
