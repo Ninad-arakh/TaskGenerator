@@ -6,6 +6,8 @@ import { editTaskApi, reorderTasksApi, groupTasksApi } from "../api/specApi";
 import EditorHeader from "../components/editor/EditorHeader";
 import EpicCard from "../components/editor/EpicCard";
 import EditorActions from "../components/editor/EditorActions";
+import { useEffect } from "react";
+import { getSpecByIdApi } from "../api/specApi";
 
 export default function Editor() {
   const { state } = useLocation();
@@ -32,16 +34,17 @@ export default function Editor() {
 
   const reorderTasks = async (epicIndex, storyIndex, newTasks) => {
     try {
+      const specId = spec._id;
+
       setSpec((prev) => {
         const copy = structuredClone(prev);
         copy.output.epics[epicIndex].userStories[storyIndex].tasks = newTasks;
         return copy;
       });
 
-      // Flatten task IDs for backend
       const orderedTaskIds = newTasks.map((task) => task.id);
 
-      await reorderTasksApi(spec._id, epicIndex, storyIndex, orderedTaskIds);
+      await reorderTasksApi(specId, epicIndex, storyIndex, orderedTaskIds);
 
       toast.success("Tasks reordered");
     } catch (err) {
@@ -72,6 +75,7 @@ export default function Editor() {
     }
   };
 
+
   const groupTasks = async (groups) => {
     try {
       await groupTasksApi(spec._id, groups);
@@ -80,6 +84,17 @@ export default function Editor() {
       toast.error("Failed to group tasks");
     }
   };
+
+  useEffect(() => {
+    if (!spec?._id) return;
+
+    const fetchSpec = async () => {
+      const res = await getSpecByIdApi(spec._id);
+      setSpec(res.data.data);
+    };
+
+    fetchSpec();
+  }, []);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-indigo-50 via-white to-purple-50">

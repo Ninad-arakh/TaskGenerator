@@ -21,3 +21,6 @@ export const reorderTasksApi = (
 
 export const groupTasksApi = (specId, groups) =>
   API.patch(`/${specId}/tasks/group`, { groups });
+
+export const getSpecByIdApi = (specId) =>
+  API.get(`/${specId}`);

@@ -91,12 +91,9 @@ export const reorderTasks = asyncHandler(async (req, res) => {
   const { specId } = req.params;
   const { epicIndex, storyIndex, orderedTaskIds } = req.body;
 
-  console.log(`
-    specId : ${specId}
-    epicIndex : ${epicIndex}
-    storyIndex : ${storyIndex}
-    orderedTaskIds : ${orderedTaskIds}
-      `);
+  if (!Array.isArray(orderedTaskIds)) {
+    return res.status(400).json({ message: "orderedTaskIds must be array" });
+  }
 
   const spec = await Spec.findById(specId);
   if (!spec) {
@@ -109,13 +106,44 @@ export const reorderTasks = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid story path" });
   }
 
-  const reorderedTasks = orderedTaskIds
-    .map((id) => story.tasks.find((t) => String(t.id) === String(id)))
-    .filter(Boolean);
+  const existingTasks = story.tasks;
+
+  // Map tasks by id
+  const taskMap = new Map(existingTasks.map((task) => [String(task.id), task]));
+
+  const reorderedTasks = [];
+
+  for (const id of orderedTaskIds) {
+    const task = taskMap.get(String(id));
+    if (!task) {
+      return res.status(400).json({
+        message: `Task ${id} not found`,
+      });
+    }
+    reorderedTasks.push(task);
+  }
+
+  if (reorderedTasks.length !== existingTasks.length) {
+    return res.status(400).json({
+      message: "Task count mismatch",
+    });
+  }
 
   story.tasks = reorderedTasks;
 
+  // 🔥 REQUIRED
+  spec.markModified("output");
+
   await spec.save();
+
+  res.json({ success: true, data: spec });
+});
+
+export const getSpecById = asyncHandler(async (req, res) => {
+  const spec = await Spec.findById(req.params.id);
+  if (!spec) {
+    return res.status(404).json({ message: "Spec not found" });
+  }
 
   res.json({ success: true, data: spec });
 });

@@ -5,8 +5,9 @@ import {
   getRecentSpecs,
   exportMarkdown,
   editTask,
-  reorderTasks,
   groupTasks,
+  reorderTasks,
+  getSpecById,
 } from "./spec.controller.js";
 
 import { generateLimiter } from "../../middleware/rateLimit.middleware.js";
@@ -26,14 +27,16 @@ router.post(
   createSpec,
 );
 
-// Edit single task
-router.patch("/:specId/tasks/:taskId", editTask);
-
 // Reorder tasks
 router.patch("/:specId/tasks/reorder", reorderTasks);
 
 // Group tasks
 router.patch("/:specId/tasks/group", groupTasks);
+
+// Edit single task
+router.patch("/:specId/tasks/:taskId", editTask);
+
+router.get("/:id", getSpecById);
 
 router.get("/recent", getRecentSpecs);
 router.get("/:id/export", exportMarkdown);

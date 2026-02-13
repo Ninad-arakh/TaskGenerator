@@ -25,32 +25,27 @@ export default function StoryCard({
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
 
+  const validTasks = Array.isArray(story?.tasks)
+    ? story.tasks.filter((task) => task && task.id)
+    : [];
+
   function handleDragEnd(event) {
     const { active, over } = event;
+
     if (!over || active.id === over.id) return;
 
     const oldIndex = validTasks.findIndex((t) => t.id === active.id);
     const newIndex = validTasks.findIndex((t) => t.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
 
     const newTasks = arrayMove(validTasks, oldIndex, newIndex);
 
     reorderTasks(epicIndex, storyIndex, newTasks);
   }
 
-  const validTasks = Array.isArray(story?.tasks)
-    ? story.tasks.filter((task) => task && task.id)
-    : [];
-
   return (
-    <div className="bg-gradient-to-br from-white to-slate-50 border rounded-2xl p-6 space-y-5">
-      <div className="flex items-start gap-2">
-        <IconBook size={18} className="text-purple-500 mt-1" />
-        <div>
-          <h3 className="font-semibold text-gray-800">{story.title}</h3>
-          <p className="text-sm text-gray-500 mt-1">{story.description}</p>
-        </div>
-      </div>
-
+    <div className="bg-linear-to-br from-white to-slate-50 border rounded-2xl p-6 space-y-5">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -61,12 +56,12 @@ export default function StoryCard({
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-4">
-            {validTasks.map((task) => (
+            {validTasks.map((task, index) => (
               <TaskItem
                 key={task.id}
                 id={task.id}
                 task={task}
-                onDelete={() => deleteTask(epicIndex, storyIndex, task.id)}
+                onDelete={() => deleteTask(epicIndex, storyIndex, index)}
                 onEdit={(updates) =>
                   editTask(epicIndex, storyIndex, task.id, updates)
                 }
