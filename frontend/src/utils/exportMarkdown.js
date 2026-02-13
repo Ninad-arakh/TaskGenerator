@@ -1,25 +1,50 @@
-export function exportMarkdown(data) {
-  const content = `
-# Specification
+export function exportMarkdown(spec) {
+  if (!spec?.output?.epics) {
+    console.error("Invalid spec structure:", spec);
+    return;
+  }
 
-## Summary
-${data.summary}
+  const lines = [];
 
-## User Stories
-${data.userStories.map(s => `- ${s}`).join("\n")}
+  lines.push(`# ${spec.goal}`);
+  lines.push("");
 
-## Engineering Tasks
-${data.engineeringTasks.map(t => `- ${t}`).join("\n")}
+  lines.push(`**Users:** ${spec.users}`);
+  lines.push(`**Template:** ${spec.templateType}`);
+  lines.push(`**Constraints:** ${spec.constraints}`);
+  lines.push("");
 
-## Risks
-${data.risks.map(r => `- ${r}`).join("\n")}
-`;
+  spec.output.epics.forEach((epic) => {
+    lines.push(`## ${epic.title}`);
+    lines.push("");
+    lines.push(epic.description);
+    lines.push("");
 
-  const blob = new Blob([content], { type: "text/markdown" });
+    epic.userStories?.forEach((story) => {
+      lines.push(`### ${story.title}`);
+      lines.push("");
+      lines.push(story.description);
+      lines.push("");
+
+      story.tasks?.forEach((task) => {
+        lines.push(
+          `- [ ] ${task.title}  \n  - Type: ${task.type}  \n  - Priority: ${task.priority}`
+        );
+      });
+
+      lines.push("");
+    });
+  });
+
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/markdown",
+  });
+
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
   a.href = url;
-  a.download = "spec.md";
+  a.download = "specification.md";
   a.click();
+
+  URL.revokeObjectURL(url);
 }

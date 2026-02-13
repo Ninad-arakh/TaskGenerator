@@ -1,241 +1,65 @@
 import { useLocation } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { exportMarkdown } from "../utils/exportMarkdown";
 import { toast } from "sonner";
 
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-
-import { CSS } from "@dnd-kit/utilities";
-
-const priorityOrder = {
-  high: 0,
-  medium: 1,
-  low: 2,
-};
-
-function SortableTask({ task, id, onDelete }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const priorityStyles = {
-    high: "border-l-4 border-red-500 bg-red-50",
-    medium: "border-l-4 border-yellow-500 bg-yellow-50",
-    low: "border-l-4 border-green-500 bg-green-50",
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`p-4 rounded-xl shadow-sm flex items-start gap-3 transition hover:shadow-md ${priorityStyles[task.priority]}`}
-    >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab text-gray-400 mt-1"
-      >
-        ☰
-      </div>
-
-      <div className="flex-1">
-        <div className="font-medium">{task.title}</div>
-
-        <div className="flex gap-3 mt-2 text-xs text-gray-600">
-          <span className="px-2 py-1 rounded bg-gray-200">
-            {task.type.toUpperCase()}
-          </span>
-
-          <span
-            className={`px-2 py-1 rounded font-semibold ${
-              task.priority === "high"
-                ? "text-red-600"
-                : task.priority === "medium"
-                ? "text-yellow-600"
-                : "text-green-600"
-            }`}
-          >
-            {task.priority.toUpperCase()}
-          </span>
-        </div>
-      </div>
-
-      <button
-        onClick={onDelete}
-        className="text-red-500 text-sm hover:opacity-70"
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
+import EditorHeader from "../components/editor/EditorHeader";
+import EpicCard from "../components/editor/EpicCard";
+import EditorActions from "../components/editor/EditorActions";
 
 export default function Editor() {
   const { state } = useLocation();
   const [spec, setSpec] = useState(state?.data);
 
-  const sensors = useSensors(useSensor(PointerSensor));
-
-  if (!spec) return <div className="p-6">No spec loaded.</div>;
+  if (!spec) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        No spec loaded.
+      </div>
+    );
+  }
 
   function deleteTask(epicIndex, storyIndex, taskIndex) {
     const updated = structuredClone(spec);
-
-    updated.output.epics[epicIndex]
-      .userStories[storyIndex]
-      .tasks.splice(taskIndex, 1);
+    updated.output.epics[epicIndex].userStories[storyIndex].tasks.splice(
+      taskIndex,
+      1,
+    );
 
     setSpec(updated);
     toast.success("Task removed");
   }
 
-  function handleDragEnd(event, epicIndex, storyIndex) {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
+  function reorderTasks(epicIndex, storyIndex, newTasks) {
     const updated = structuredClone(spec);
-    const tasks =
-      updated.output.epics[epicIndex].userStories[storyIndex].tasks;
-
-    const oldIndex = tasks.findIndex((_, i) => i.toString() === active.id);
-    const newIndex = tasks.findIndex((_, i) => i.toString() === over.id);
-
-    updated.output.epics[epicIndex].userStories[storyIndex].tasks =
-      arrayMove(tasks, oldIndex, newIndex);
+    updated.output.epics[epicIndex].userStories[storyIndex].tasks = newTasks;
 
     setSpec(updated);
-    toast.success("Task reordered");
+    toast.success("Tasks reordered");
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-10">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Soft Background Glow */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none">
+        <div className="absolute w-[700px] h-[700px] bg-indigo-300/30 blur-3xl rounded-full -top-40 -left-40" />
+        <div className="absolute w-[700px] h-[700px] bg-purple-300/30 blur-3xl rounded-full bottom-0 right-0" />
+      </div>
 
-        {/* Header */}
-        <div className="bg-white/70 backdrop-blur border rounded-2xl p-6 shadow-sm">
-          <h1 className="text-2xl font-bold mb-2">{spec.goal}</h1>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 py-12 space-y-10">
+        <EditorHeader spec={spec} />
 
-          <div className="text-sm text-gray-600 space-y-1">
-            <div><strong>Users:</strong> {spec.users}</div>
-            <div><strong>Template:</strong> {spec.templateType}</div>
-            <div><strong>Constraints:</strong> {spec.constraints}</div>
-          </div>
-        </div>
-
-        {/* EPICS */}
         {spec.output.epics.map((epic, epicIndex) => (
-          <div
+          <EpicCard
             key={epicIndex}
-            className="bg-white/60 backdrop-blur border rounded-2xl p-6 shadow-sm space-y-6"
-          >
-            <div>
-              <h2 className="text-xl font-semibold">{epic.title}</h2>
-              <p className="text-gray-600 text-sm mt-1">
-                {epic.description}
-              </p>
-            </div>
-
-            {/* USER STORIES */}
-            {epic.userStories.map((story, storyIndex) => {
-
-              // 🔥 SORT HIGH → LOW
-              const sortedTasks = useMemo(() => {
-                return [...story.tasks].sort(
-                  (a, b) =>
-                    priorityOrder[a.priority] -
-                    priorityOrder[b.priority]
-                );
-              }, [story.tasks]);
-
-              return (
-                <div
-                  key={storyIndex}
-                  className="bg-gradient-to-r from-white to-slate-50 border rounded-xl p-5 space-y-4"
-                >
-                  <div>
-                    <h3 className="font-semibold">{story.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {story.description}
-                    </p>
-                  </div>
-
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={(e) =>
-                      handleDragEnd(e, epicIndex, storyIndex)
-                    }
-                  >
-                    <SortableContext
-                      items={sortedTasks.map((_, i) => i.toString())}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-3">
-                        {sortedTasks.map((task, taskIndex) => (
-                          <SortableTask
-                            key={taskIndex}
-                            id={taskIndex.toString()}
-                            task={task}
-                            onDelete={() =>
-                              deleteTask(
-                                epicIndex,
-                                storyIndex,
-                                taskIndex
-                              )
-                            }
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              );
-            })}
-          </div>
+            epic={epic}
+            epicIndex={epicIndex}
+            deleteTask={deleteTask}
+            reorderTasks={reorderTasks}
+          />
         ))}
 
-        {/* Footer */}
-        <div className="flex gap-4">
-          <button
-            onClick={() => {
-              exportMarkdown(spec);
-              toast.success("Markdown exported");
-            }}
-            className="bg-black text-white px-5 py-2 rounded-xl"
-          >
-            Export Markdown
-          </button>
-
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(
-                JSON.stringify(spec, null, 2)
-              );
-              toast.success("JSON copied");
-            }}
-            className="border px-5 py-2 rounded-xl"
-          >
-            Copy JSON
-          </button>
-        </div>
+        <EditorActions spec={spec} />
       </div>
     </div>
   );
