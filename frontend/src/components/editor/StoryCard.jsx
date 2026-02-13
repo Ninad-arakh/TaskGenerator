@@ -45,7 +45,7 @@ export default function StoryCard({
   }
 
   return (
-    <div className="bg-linear-to-br from-white to-slate-50 border rounded-2xl p-6 space-y-5">
+    <div className="bg-linear-to-br from-white to-slate-50  border border-gray-400/50 rounded-2xl md:p-6 space-y-5">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -61,7 +61,7 @@ export default function StoryCard({
                 key={task.id}
                 id={task.id}
                 task={task}
-                onDelete={() => deleteTask(epicIndex, storyIndex, index)}
+                onDelete={() => deleteTask(epicIndex, storyIndex, task.id)}
                 onEdit={(updates) =>
                   editTask(epicIndex, storyIndex, task.id, updates)
                 }

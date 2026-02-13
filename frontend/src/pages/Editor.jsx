@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { exportMarkdown } from "../utils/exportMarkdown";
 import { toast } from "sonner";
-import { editTaskApi, reorderTasksApi, groupTasksApi } from "../api/specApi";
+import { editTaskApi, reorderTasksApi, groupTasksApi, deleteTaskApi } from "../api/specApi";
 import EditorHeader from "../components/editor/EditorHeader";
 import EpicCard from "../components/editor/EpicCard";
 import EditorActions from "../components/editor/EditorActions";
@@ -21,15 +21,22 @@ export default function Editor() {
     );
   }
 
-  function deleteTask(epicIndex, storyIndex, taskIndex) {
-    const updated = structuredClone(spec);
-    updated.output.epics[epicIndex].userStories[storyIndex].tasks.splice(
-      taskIndex,
-      1,
-    );
+  function deleteTask(epicIndex, storyIndex, taskId) {
+    const specId = spec._id;
 
-    setSpec(updated);
-    toast.success("Task removed");
+    // Optimistic UI update
+    setSpec((prev) => {
+      const copy = structuredClone(prev);
+      copy.output.epics[epicIndex].userStories[storyIndex].tasks =
+        copy.output.epics[epicIndex].userStories[storyIndex].tasks.filter(
+          (task) => task.id !== taskId,
+        );
+      return copy;
+    });
+
+    deleteTaskApi(specId, taskId)
+      .then(() => toast.success("Task deleted"))
+      .catch(() => toast.error("Failed to delete task"));
   }
 
   const reorderTasks = async (epicIndex, storyIndex, newTasks) => {
@@ -75,11 +82,17 @@ export default function Editor() {
     }
   };
 
-
-  const groupTasks = async (groups) => {
+  const groupTasks = async (epicIndex, storyIndex, groups) => {
     try {
-      await groupTasksApi(spec._id, groups);
+      const specId = spec._id;
+
+      await groupTasksApi(specId, epicIndex, storyIndex, groups);
+
       toast.success("Tasks grouped");
+
+      // refetch fresh data
+      const res = await getSpecByIdApi(specId);
+      setSpec(res.data.data);
     } catch (err) {
       toast.error("Failed to group tasks");
     }

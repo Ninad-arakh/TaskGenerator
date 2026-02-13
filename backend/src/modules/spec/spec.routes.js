@@ -8,6 +8,7 @@ import {
   groupTasks,
   reorderTasks,
   getSpecById,
+  deleteTask,
 } from "./spec.controller.js";
 
 import { generateLimiter } from "../../middleware/rateLimit.middleware.js";
@@ -35,6 +36,9 @@ router.patch("/:specId/tasks/group", groupTasks);
 
 // Edit single task
 router.patch("/:specId/tasks/:taskId", editTask);
+
+// Delete a task
+router.delete("/:specId/tasks/:taskId", deleteTask);
 
 router.get("/:id", getSpecById);
 

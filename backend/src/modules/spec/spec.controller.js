@@ -148,10 +148,14 @@ export const getSpecById = asyncHandler(async (req, res) => {
   res.json({ success: true, data: spec });
 });
 
-// 📦 Group Tasks
+// 🧩 Group Tasks
 export const groupTasks = asyncHandler(async (req, res) => {
   const { specId } = req.params;
   const { epicIndex, storyIndex, groups } = req.body;
+
+  if (!Array.isArray(groups)) {
+    return res.status(400).json({ message: "Groups must be array" });
+  }
 
   const spec = await Spec.findById(specId);
   if (!spec) {
@@ -164,16 +168,66 @@ export const groupTasks = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid story path" });
   }
 
-  groups.forEach((group) => {
-    group.taskIds.forEach((taskId) => {
-      const task = story.tasks.find((t) => String(t.id) === String(taskId));
+  const taskMap = new Map(story.tasks.map((task) => [String(task.id), task]));
 
-      if (task) {
-        task.group = group.groupName;
+  for (const group of groups) {
+    if (!group.groupName || !Array.isArray(group.taskIds)) {
+      return res.status(400).json({
+        message: "Invalid group structure",
+      });
+    }
+
+    for (const taskId of group.taskIds) {
+      const task = taskMap.get(String(taskId));
+
+      if (!task) {
+        return res.status(400).json({
+          message: `Task ${taskId} not found`,
+        });
       }
-    });
-  });
 
+      task.group = group.groupName;
+    }
+  }
+
+  spec.markModified("output");
+  await spec.save();
+
+  res.json({ success: true, data: spec });
+});
+
+// 🗑 Delete Task
+export const deleteTask = asyncHandler(async (req, res) => {
+  const { specId, taskId } = req.params;
+
+  const spec = await Spec.findById(specId);
+  if (!spec) {
+    return res.status(404).json({ message: "Spec not found" });
+  }
+
+  let taskDeleted = false;
+
+  for (const epic of spec.output.epics || []) {
+    for (const story of epic.userStories || []) {
+      const initialLength = story.tasks?.length || 0;
+
+      story.tasks = story.tasks?.filter(
+        (task) => String(task.id) !== String(taskId),
+      );
+
+      if (story.tasks.length !== initialLength) {
+        taskDeleted = true;
+        break;
+      }
+    }
+    if (taskDeleted) break;
+  }
+
+  if (!taskDeleted) {
+    return res.status(404).json({ message: "Task not found" });
+  }
+
+  spec.markModified("output");
   await spec.save();
 
   res.json({ success: true, data: spec });

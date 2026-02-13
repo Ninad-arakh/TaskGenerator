@@ -19,8 +19,14 @@ export const reorderTasksApi = (
     orderedTaskIds,
   });
 
-export const groupTasksApi = (specId, groups) =>
-  API.patch(`/${specId}/tasks/group`, { groups });
+export const groupTasksApi = (specId, epicIndex, storyIndex, groups) =>
+  API.patch(`/${specId}/tasks/group`, {
+    epicIndex,
+    storyIndex,
+    groups,
+  });
 
-export const getSpecByIdApi = (specId) =>
-  API.get(`/${specId}`);
+export const getSpecByIdApi = (specId) => API.get(`/${specId}`);
+
+export const deleteTaskApi = (specId, taskId) =>
+  API.delete(`/${specId}/tasks/${taskId}`);

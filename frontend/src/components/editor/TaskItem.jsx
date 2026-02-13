@@ -46,7 +46,7 @@ export default function TaskItem({ id, task, onDelete, onEdit }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group bg-white border rounded-xl p-4 shadow-sm flex items-start gap-4 transition hover:shadow-lg hover:-translate-y-1"
+      className="group bg-linear-to-br from-[#ffeaf9] via-[#f9f9ff] to-[#e9f1ff] border border-gray-700/30 rounded-xl md:p-4 p-2 shadow-sm flex items-start gap-4 transition hover:shadow-lg hover:-translate-y-1"
     >
       <div
         {...attributes}
