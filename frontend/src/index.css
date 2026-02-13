@@ -1,1 +1,205 @@
 @import "tailwindcss";
+
+/* ============================= */
+/*        DESIGN TOKENS          */
+/* ============================= */
+
+:root {
+  /* Base Colors */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Brand */
+  --brand-primary: #4f46e5;
+  --brand-secondary: #6366f1;
+  --brand-soft: #eef2ff;
+
+  /* Status */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --error: #dc2626;
+
+  /* Borders */
+  --border-light: #e2e8f0;
+}
+
+/* ============================= */
+/*         BASE STYLES           */
+/* ============================= */
+
+body {
+  @apply text-base antialiased;
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #eef2ff 40%,
+    #f1f5f9 100%
+  );
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================= */
+/*         TYPOGRAPHY            */
+/* ============================= */
+
+/* h1 {
+  @apply text-4xl font-bold tracking-tight;
+}
+
+h2 {
+  @apply text-2xl font-semibold;
+}
+
+h3 {
+  @apply text-lg font-semibold;
+} */
+
+p {
+  color: var(--text-secondary);
+}
+
+/* ============================= */
+/*         LAYOUT UTILS          */
+/* ============================= */
+
+.container-page {
+  @apply max-w-6xl mx-auto px-6 py-10;
+}
+
+/* ============================= */
+/*           CARDS               */
+/* ============================= */
+
+.card {
+  @apply rounded-2xl p-6 border;
+  background: var(--bg-secondary);
+  border-color: var(--border-light);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+  transition: all 0.25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(79, 70, 229, 0.08);
+}
+
+/* ============================= */
+/*          INPUTS               */
+/* ============================= */
+
+.input {
+  @apply w-full rounded-xl px-4 py-3 border text-sm;
+  border-color: var(--border-light);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* ============================= */
+/*          BUTTONS              */
+/* ============================= */
+
+.btn-primary {
+  @apply px-6 py-3 rounded-xl text-white font-medium transition-all duration-200;
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary),
+    var(--brand-secondary)
+  );
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(79, 70, 229, 0.35);
+}
+
+.btn-secondary {
+  @apply px-5 py-2 rounded-xl border text-sm font-medium transition-all;
+  border-color: var(--border-light);
+  background: white;
+}
+
+.btn-secondary:hover {
+  background: var(--brand-soft);
+}
+
+/* ============================= */
+/*          STATUS BADGES        */
+/* ============================= */
+
+.status-success {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--success);
+}
+
+.status-error {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--error);
+}
+
+.status-warning {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+/* ============================= */
+/*        SECTION HEADERS        */
+/* ============================= */
+
+.section-title {
+  @apply text-3xl font-bold mb-3;
+}
+
+.section-subtitle {
+  @apply text-sm;
+  color: var(--text-muted);
+}
+
+/* ============================= */
+/*      SOFT GRADIENT BLOCKS     */
+/* ============================= */
+
+.gradient-soft {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.05),
+    rgba(99, 102, 241, 0.05)
+  );
+  border-radius: 1.5rem;
+}
+
+/* ============================= */
+/*        SCROLLBAR CLEAN        */
+/* ============================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.3);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.5);
+}
