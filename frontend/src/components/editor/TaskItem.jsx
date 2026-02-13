@@ -8,7 +8,7 @@ import {
   IconDatabase,
 } from "@tabler/icons-react";
 
-export default function TaskItem({ id, task, onDelete }) {
+export default function TaskItem({ id, task, onDelete, onEdit }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -44,7 +44,15 @@ export default function TaskItem({ id, task, onDelete }) {
       </div>
 
       <div className="flex-1 space-y-2">
-        <div className="font-medium text-gray-800">
+        <div
+          className="font-medium text-gray-800 cursor-pointer"
+          onDoubleClick={() => {
+            const newTitle = prompt("Edit task title", task.title);
+            if (newTitle && newTitle !== task.title) {
+              onEdit({ title: newTitle });
+            }
+          }}
+        >
           {task.title}
         </div>
 

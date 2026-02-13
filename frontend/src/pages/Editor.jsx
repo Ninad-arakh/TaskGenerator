@@ -2,7 +2,8 @@ import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { exportMarkdown } from "../utils/exportMarkdown";
 import { toast } from "sonner";
-
+import { toast } from "sonner";
+import { editTaskApi, reorderTasksApi, groupTasksApi } from "../api/specApi";
 import EditorHeader from "../components/editor/EditorHeader";
 import EpicCard from "../components/editor/EpicCard";
 import EditorActions from "../components/editor/EditorActions";
@@ -30,13 +31,54 @@ export default function Editor() {
     toast.success("Task removed");
   }
 
-  function reorderTasks(epicIndex, storyIndex, newTasks) {
-    const updated = structuredClone(spec);
-    updated.output.epics[epicIndex].userStories[storyIndex].tasks = newTasks;
+  const reorderTasks = async (epicIndex, storyIndex, newTasks) => {
+    try {
+      const updatedSpec = { ...spec };
 
-    setSpec(updated);
-    toast.success("Tasks reordered");
-  }
+      updatedSpec.output.epics[epicIndex].userStories[storyIndex].tasks =
+        newTasks;
+
+      setSpec(updatedSpec);
+
+      // Flatten task IDs for backend
+      const orderedTaskIds = newTasks.map((task) => task.id);
+
+      await reorderTasksApi(spec._id, orderedTaskIds);
+
+      toast.success("Tasks reordered");
+    } catch (err) {
+      toast.error("Failed to reorder tasks");
+    }
+  };
+
+  const editTask = async (epicIndex, storyIndex, taskIndex, updates) => {
+    try {
+      const updatedSpec = { ...spec };
+      const task =
+        updatedSpec.output.epics[epicIndex].userStories[storyIndex].tasks[
+          taskIndex
+        ];
+
+      Object.assign(task, updates);
+
+      setSpec(updatedSpec);
+
+      await editTaskApi(spec._id, task.id, updates);
+
+      toast.success("Task updated");
+    } catch (err) {
+      toast.error("Failed to update task");
+    }
+  };
+
+  const groupTasks = async (groups) => {
+    try {
+      await groupTasksApi(spec._id, groups);
+      toast.success("Tasks grouped");
+    } catch (err) {
+      toast.error("Failed to group tasks");
+    }
+  };    
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">

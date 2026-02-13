@@ -4,7 +4,11 @@ import {
   createSpec,
   getRecentSpecs,
   exportMarkdown,
+  editTask,
+  reorderTasks,
+  groupTasks,
 } from "./spec.controller.js";
+
 import { generateLimiter } from "../../middleware/rateLimit.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 
@@ -19,8 +23,17 @@ router.post(
     body("templateType").notEmpty(),
   ],
   validate,
-  createSpec
+  createSpec,
 );
+
+// Edit single task
+router.patch("/:specId/tasks/:taskId", editTask);
+
+// Reorder tasks
+router.patch("/:specId/tasks/reorder", reorderTasks);
+
+// Group tasks
+router.patch("/:specId/tasks/group", groupTasks);
 
 router.get("/recent", getRecentSpecs);
 router.get("/:id/export", exportMarkdown);

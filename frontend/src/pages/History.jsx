@@ -3,6 +3,10 @@ import { getHistory } from "../api/specService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import HistoryHeader from "../components/history/HistoryHeader";
+import HistoryCard from "../components/history/HistoryCard";
+import HistoryEmpty from "../components/history/HistoryEmpty";
+
 export default function History() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,8 +16,6 @@ export default function History() {
     async function fetchHistory() {
       try {
         const res = await getHistory();
-
-        // Fix: API returns { success, data }
         setHistory(res?.data || []);
       } catch (err) {
         toast.error("Failed to load history");
@@ -29,100 +31,34 @@ export default function History() {
     navigate("/editor", { state: { data: item } });
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Loading history...
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-10">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold">Specification History</h1>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Background Glow */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none">
+        <div className="absolute w-[700px] h-[700px] bg-indigo-300/30 blur-3xl rounded-full -top-40 -left-40" />
+        <div className="absolute w-[700px] h-[700px] bg-purple-300/30 blur-3xl rounded-full bottom-0 right-0" />
+      </div>
 
-        {history.length === 0 && (
-          <div className="text-gray-500">No history found.</div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 py-12 space-y-10">
+        <HistoryHeader />
+
+        {loading && (
+          <div className="text-center text-gray-500">Loading history...</div>
         )}
 
-        {history.slice(0, 10).map((item, index) => {
-          const totalEpics = item.output?.epics?.length || 0;
+        {!loading && history.length === 0 && <HistoryEmpty />}
 
-          const totalStories =
-            item.output?.epics?.reduce(
-              (acc, epic) => acc + epic.userStories.length,
-              0,
-            ) || 0;
-
-          const totalTasks =
-            item.output?.epics?.reduce(
-              (acc, epic) =>
-                acc +
-                epic.userStories.reduce(
-                  (storyAcc, story) => storyAcc + story.tasks.length,
-                  0,
-                ),
-              0,
-            ) || 0;
-
-          return (
-            <div
-              key={item._id || index}
-              className="bg-white/70 backdrop-blur border rounded-2xl p-6 shadow-sm hover:shadow-md transition"
-            >
-              {/* Header */}
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-lg font-semibold capitalize">
-                    {item.goal}
-                  </h2>
-
-                  <div className="text-sm text-gray-600 mt-2 space-y-1">
-                    <div>
-                      <strong>Users:</strong> {item.users}
-                    </div>
-                    <div>
-                      <strong>Template:</strong> {item.templateType}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => openSpec(item)}
-                  className="bg-black text-white px-4 py-2 rounded-xl text-sm hover:opacity-90 transition"
-                >
-                  Open
-                </button>
-              </div>
-
-              {/* Stats */}
-              <div className="flex gap-6 mt-5 text-sm text-gray-600">
-                <div>
-                  <span className="font-semibold text-black">{totalEpics}</span>{" "}
-                  Epics
-                </div>
-
-                <div>
-                  <span className="font-semibold text-black">
-                    {totalStories}
-                  </span>{" "}
-                  Stories
-                </div>
-
-                <div>
-                  <span className="font-semibold text-black">{totalTasks}</span>{" "}
-                  Tasks
-                </div>
-              </div>
-
-              {/* Date */}
-              <div className="mt-4 text-xs text-gray-400">
-                Created: {new Date(item.createdAt).toLocaleString()}
-              </div>
-            </div>
-          );
-        })}
+        {!loading && history.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-8">
+            {history.slice(0, 10).map((item) => (
+              <HistoryCard
+                key={item._id}
+                item={item}
+                onOpen={() => openSpec(item)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

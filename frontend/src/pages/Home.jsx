@@ -124,7 +124,7 @@ function FormSection({ form, handleChange, handleSubmit, loading, error }) {
 function Divider({ text }) {
   return (
     <div className="mt-12 flex flex-col items-center w-full relative">
-      <h3 className="text-3xl font-semibold text-[#475569]">{text}</h3>
+      <h3 className="text-3xl font-semibold text-[#475569] bg-[#eef2fe] px-2">{text}</h3>
       <div className="w-full h-1 bg-linear-to-r from-transparent via-gray-400/40 to-transparent absolute top-5 -z-10" />
     </div>
   );
@@ -162,7 +162,7 @@ export default function Home() {
   };
 
   return (
-    <main className="font-sans">
+    <main className="font-sans mb-8">
       <HeroSection />
       <FeaturesSection />
       <Divider text="See It in Action" />

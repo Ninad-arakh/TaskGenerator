@@ -37,16 +37,11 @@ export default function StoryCard({
 
   return (
     <div className="bg-gradient-to-br from-white to-slate-50 border rounded-2xl p-6 space-y-5">
-
       <div className="flex items-start gap-2">
         <IconBook size={18} className="text-purple-500 mt-1" />
         <div>
-          <h3 className="font-semibold text-gray-800">
-            {story.title}
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {story.description}
-          </p>
+          <h3 className="font-semibold text-gray-800">{story.title}</h3>
+          <p className="text-sm text-gray-500 mt-1">{story.description}</p>
         </div>
       </div>
 
@@ -56,9 +51,7 @@ export default function StoryCard({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={story.tasks.map(
-            (_, i) => `${epicIndex}-${storyIndex}-${i}`
-          )}
+          items={story.tasks.map((_, i) => `${epicIndex}-${storyIndex}-${i}`)}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-4">
@@ -67,8 +60,9 @@ export default function StoryCard({
                 key={taskIndex}
                 id={`${epicIndex}-${storyIndex}-${taskIndex}`}
                 task={task}
-                onDelete={() =>
-                  deleteTask(epicIndex, storyIndex, taskIndex)
+                onDelete={() => deleteTask(epicIndex, storyIndex, taskIndex)}
+                onEdit={(updates) =>
+                  editTask(epicIndex, storyIndex, taskIndex, updates)
                 }
               />
             ))}

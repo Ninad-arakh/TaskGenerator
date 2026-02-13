@@ -42,56 +42,82 @@ export const exportMarkdown = asyncHandler(async (req, res) => {
   res.send(spec.markdown);
 });
 
-// import Spec from "./spec.model.js";
-// import generateSpec from "./spec.service.js";
-// import asyncHandler from "../../utils/asyncHandler.js";
-// import ApiError from "../../utils/apiError.js";
-// import { buildMarkdown } from "../../utils/markdownBuilder.js";
+// ✏️ Edit Task
+export const editTask = asyncHandler(async (req, res) => {
+  const { specId, taskId } = req.params;
+  const updates = req.body;
 
-// export const createSpec = asyncHandler(async (req, res) => {
-//   const { goal, users, constraints, templateType } = req.body;
+  const spec = await Spec.findById(specId);
+  if (!spec) {
+    return res.status(404).json({ message: "Spec not found" });
+  }
 
-//   if (!goal || !users) {
-//     throw new ApiError(400, "Goal and users are required.");
-//   }
+  const task = spec.output.tasks.find((t) => t.id === taskId);
+  if (!task) {
+    return res.status(404).json({ message: "Task not found" });
+  }
 
-//   const structuredOutput = await generateSpec({
-//     goal,
-//     users,
-//     constraints,
-//     templateType,
-//   });
+  Object.assign(task, updates);
 
-//   const spec = await Spec.create({
-//     goal,
-//     users,
-//     constraints,
-//     templateType,
-//     output: structuredOutput,
-//   });
+  await spec.save();
 
-//   res.status(201).json(spec);
-// });
+  res.json({ success: true, data: spec });
+});
 
-// export const getRecentSpecs = asyncHandler(async (req, res) => {
-//   const specs = await Spec.find().sort({ createdAt: -1 }).limit(5);
+// 🔁 Reorder Tasks
+export const reorderTasks = asyncHandler(async (req, res) => {
+  const { specId } = req.params;
+  const { orderedTaskIds } = req.body;
+  // ["task-3", "task-1", "task-2"]
 
-//   res.json(specs);
-// });
+  const spec = await Spec.findById(specId);
+  if (!spec) {
+    return res.status(404).json({ message: "Spec not found" });
+  }
 
-// export const exportMarkdown = asyncHandler(async (req, res) => {
-//   const { id } = req.params;
+  const reordered = orderedTaskIds
+    .map((id, index) => {
+      const task = spec.output.tasks.find((t) => t.id === id);
+      if (task) {
+        task.order = index + 1;
+      }
+      return task;
+    })
+    .filter(Boolean);
 
-//   const spec = await Spec.findById(id);
+  spec.output.tasks = reordered;
 
-//   if (!spec) {
-//     throw new ApiError(404, "Spec not found");
-//   }
+  await spec.save();
 
-//   const markdown = buildMarkdown(spec.output);
+  res.json({ success: true, data: spec });
+});
 
-//   res.setHeader("Content-Type", "text/markdown");
-//   res.setHeader("Content-Disposition", `attachment; filename=spec-${id}.md`);
+// 📦 Group Tasks
+export const groupTasks = asyncHandler(async (req, res) => {
+  const { specId } = req.params;
+  const { groups } = req.body;
+  /*
+    groups: [
+      { groupName: "Planning", taskIds: ["task-1", "task-2"] },
+      { groupName: "Development", taskIds: ["task-3"] }
+    ]
+  */
 
-//   res.send(markdown);
-// });
+  const spec = await Spec.findById(specId);
+  if (!spec) {
+    return res.status(404).json({ message: "Spec not found" });
+  }
+
+  groups.forEach((group) => {
+    group.taskIds.forEach((taskId) => {
+      const task = spec.output.tasks.find((t) => t.id === taskId);
+      if (task) {
+        task.group = group.groupName;
+      }
+    });
+  });
+
+  await spec.save();
+
+  res.json({ success: true, data: spec });
+});
