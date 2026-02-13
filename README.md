@@ -1,7 +1,7 @@
 # AI Task Generator – Mini Planning Tool
 
 ## Live App
-<your-live-link>
+<https://ai-task-generator-theta.vercel.app/>
 
 ## Overview
 This app allows users to:
@@ -14,8 +14,8 @@ This app allows users to:
 ## Tech Stack
 Frontend: React + Vite  
 Backend: Node.js + Express  
-Database: (SQLite / Postgres / in-memory)  
-LLM: (OpenAI GPT-4 / GPT-4o / etc.)
+Database: MongoDb   
+LLM: Gemini 2.5 flash
 
 ## Features Implemented
 - Feature spec form
@@ -34,16 +34,39 @@ LLM: (OpenAI GPT-4 / GPT-4o / etc.)
 - Full test suite
 - Advanced prompt customization
 
-## Run Locally
+# How to Run Locally
 
 ### Backend
+```
 cd backend  
 npm install  
 npm run dev  
+```
 
 ### Frontend
+```
 cd frontend  
 npm install  
 npm run dev  
+```
+--- 
+now the project is running on 
+```
+http://localhost:5173
+```
 
 Make sure `.env` is configured (see `.env.example`).
+
+
+<!-- ## project structure
+```
+ai-task-generator/
+│
+├── backend/
+├── frontend/
+├── README.md
+├── AI_NOTES.md
+├── PROMPTS_USED.md
+├── ABOUTME.md
+├── .env.example
+``` -->
