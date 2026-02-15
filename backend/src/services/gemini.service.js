@@ -90,24 +90,4 @@ export async function generateSpec(input) {
   }, 2);
 }
 
-/* 
 
-import axios from "axios";
-import { ENV } from "../config/env.js";
-import { retry } from "../utils/retry.js";
-
-export const generateFromGemini = async (prompt) => {
-  return retry(async () => {
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${ENV.GEMINI_API_KEY}`,
-      {
-        contents: [{ parts: [{ text: prompt }] }],
-      }
-    );
-
-    return response.data.candidates[0].content.parts[0].text;
-  }, 2);
-};
-
-
-*/

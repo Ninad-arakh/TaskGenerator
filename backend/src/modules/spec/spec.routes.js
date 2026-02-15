@@ -40,9 +40,9 @@ router.patch("/:specId/tasks/:taskId", editTask);
 // Delete a task
 router.delete("/:specId/tasks/:taskId", deleteTask);
 
+router.get("/recent", getRecentSpecs);
 router.get("/:id", getSpecById);
 
-router.get("/recent", getRecentSpecs);
 router.get("/:id/export", exportMarkdown);
 
 export default router;
