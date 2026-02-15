@@ -8,6 +8,7 @@ export const getHealth = async (req, res) => {
   let llmStatus = true;
 
   try {
+    console.log("gemini api Key : ", ENV.GEMINI_API_KEY)
     const ai = new GoogleGenAI({ apiKey: ENV.GEMINI_API_KEY });
 
     await ai.models.generateContent({
