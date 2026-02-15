@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://taskgeneratorbackend.onrender.com/api/specs",
+  // baseURL: "https://taskgenerator-yija.onrender.com/api/specs",
+  // baseURL: "http://localhost:5000/api/specs",
 });
 
 export const editTaskApi = (specId, taskId, data) =>
